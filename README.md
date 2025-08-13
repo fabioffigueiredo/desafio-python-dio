@@ -57,8 +57,8 @@ desafio-python-dio/
 git clone https://github.com/fabioffigueiredo/desafio-python-dio.git
 cd desafio-python-dio
 
-2. **Criar ambiente virtual (recomendado)**
-3. 
+**2. Criar ambiente virtual (recomendado)**
+ 
 python3 -m venv venv
 source venv/bin/activate   # Linux/macOS
 venv\Scripts\activate      # Windows
