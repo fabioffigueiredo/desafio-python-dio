@@ -1,0 +1,11 @@
+# Validação de dados
+pydantic==2.8.2
+
+# Saída formatada no terminal
+rich==13.7.1
+
+# Argumentos via linha de comando
+argparse==1.4.0
+
+# Testes automatizados
+pytest==8.3.3
