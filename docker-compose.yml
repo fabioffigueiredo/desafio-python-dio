@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: banco_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: banco_dio
+      MYSQL_USER: banco_user
+      MYSQL_PASSWORD: banco_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - banco_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://banco_user:banco_pass@mysql:3306/banco_dio
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - banco_network
+    volumes:
+      - .:/app
+
+volumes:
+  mysql_data:
+
+networks:
+  banco_network:
+    driver: bridge

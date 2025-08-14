@@ -9,3 +9,27 @@ argparse==1.4.0
 
 # Testes automatizados
 pytest==8.3.3
+
+# FastAPI e dependências
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Banco de dados
+sqlalchemy==2.0.35
+mysql-connector-python==8.2.0
+alembic==1.13.3
+
+# Autenticação e segurança
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+
+# Desenvolvimento e qualidade de código
+pre-commit==3.5.0
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+
+# Testes adicionais
+pytest-asyncio==0.21.1
+httpx==0.25.2
