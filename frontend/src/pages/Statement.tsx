@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Calendar, Filter, Download, ArrowUpCircle, ArrowDownCircle, ArrowRightLeft, Search } from 'lucide-react';
+import { Calendar, Filter, Download, ArrowUpCircle, ArrowDownCircle, ArrowRightLeft, Search, Zap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSelectedAccount } from '../hooks/useSelectedAccount';
 import { useNotification } from '../hooks/useNotification';
@@ -106,7 +106,9 @@ const ButtonGroup = styled.div`
   flex-wrap: wrap;
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const Button = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['variant'].includes(prop),
+})<{ variant?: 'primary' | 'secondary' }>`
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -192,6 +194,7 @@ const TransactionIcon = styled.div<{ type: string }>`
       case 'deposito': return '#10B981';
       case 'saque': return '#EF4444';
       case 'transferencia': return '#3B82F6';
+      case 'pix': return '#F59E0B';
       default: return '#6B7280';
     }
   }};
@@ -254,10 +257,11 @@ interface Transaction {
   id: number;
   tipo: string;
   valor: number;
-  data_transacao: string;
-  conta_origem?: string;
-  conta_destino?: string;
+  created_at: string;
   descricao?: string;
+  saldo_anterior: number;
+  saldo_posterior: number;
+  conta_id: number;
 }
 
 interface FilterForm {
@@ -277,6 +281,41 @@ const filterSchema: yup.ObjectSchema<FilterForm> = yup.object().shape({
   valor_min: yup.string().optional(),
   valor_max: yup.string().optional()
 });
+
+// Função para determinar o sinal da transação
+const getTransactionSign = (transaction: Transaction): string => {
+  // Para saques, sempre negativo
+  if (transaction.tipo === 'saque') {
+    return '-';
+  }
+  
+  // Para PIX, verificar se é saída ou entrada pela descrição
+  if (transaction.tipo === 'pix') {
+    // Se a descrição contém "PIX para", é uma saída (débito)
+    if (transaction.descricao && transaction.descricao.includes('PIX para')) {
+      return '-';
+    }
+    // Se a descrição contém "PIX recebido", é uma entrada (crédito)
+    if (transaction.descricao && transaction.descricao.includes('PIX recebido')) {
+      return '+';
+    }
+  }
+  
+  // Para transferências, verificar se é saída ou entrada pela descrição
+  if (transaction.tipo === 'transferencia') {
+    // Se a descrição contém "Transferência para", é uma saída (débito)
+    if (transaction.descricao && transaction.descricao.includes('Transferência para')) {
+      return '-';
+    }
+    // Se a descrição contém "Transferência recebida", é uma entrada (crédito)
+    if (transaction.descricao && transaction.descricao.includes('Transferência recebida')) {
+      return '+';
+    }
+  }
+  
+  // Para depósitos e outros tipos, sempre positivo
+  return '+';
+};
 
 export const Statement: React.FC = () => {
   const { user } = useAuth();
@@ -390,14 +429,14 @@ export const Statement: React.FC = () => {
     }
 
     const csvContent = [
-      ['Data', 'Tipo', 'Valor', 'Conta Origem', 'Conta Destino', 'Descrição'],
+      ['Data', 'Tipo', 'Valor', 'Descrição', 'Saldo Anterior', 'Saldo Posterior'],
       ...transactions.map(transaction => [
-        formatDate(transaction.data_transacao),
+        formatDate(transaction.created_at),
         transaction.tipo,
         transaction.valor.toString(),
-        transaction.conta_origem || '',
-        transaction.conta_destino || '',
-        transaction.descricao || ''
+        transaction.descricao || '',
+        transaction.saldo_anterior.toString(),
+        transaction.saldo_posterior.toString()
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -426,6 +465,8 @@ export const Statement: React.FC = () => {
         return <ArrowUpCircle size={20} />;
       case 'transferencia':
         return <ArrowRightLeft size={20} />;
+      case 'pix':
+        return <Zap size={20} />;
       default:
         return <ArrowRightLeft size={20} />;
     }
@@ -439,6 +480,8 @@ export const Statement: React.FC = () => {
         return 'Saque';
       case 'transferencia':
         return 'Transferência';
+      case 'pix':
+        return 'PIX';
       default:
         return type;
     }
@@ -451,13 +494,13 @@ export const Statement: React.FC = () => {
       return false;
     }
     
-    if (filters.data_inicio && new Date(transaction.data_transacao) < new Date(filters.data_inicio)) {
-      return false;
-    }
-    
-    if (filters.data_fim && new Date(transaction.data_transacao) > new Date(filters.data_fim + 'T23:59:59')) {
-      return false;
-    }
+    if (filters.data_inicio && new Date(transaction.created_at) < new Date(filters.data_inicio)) {
+        return false;
+      }
+      
+      if (filters.data_fim && new Date(transaction.created_at) > new Date(filters.data_fim + 'T23:59:59')) {
+        return false;
+      }
     
     if (filters.valor_min && filters.valor_min !== '' && !isNaN(Number(filters.valor_min)) && transaction.valor < Number(filters.valor_min)) {
       return false;
@@ -468,7 +511,7 @@ export const Statement: React.FC = () => {
     }
     
     return true;
-  }).sort((a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime());
+  }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return (
     <Container>
@@ -485,34 +528,38 @@ export const Statement: React.FC = () => {
             <input type="hidden" {...filterForm.register('conta_id')} />
 
             <FormGroup>
-              <Label>Tipo de Transação</Label>
-              <Select {...filterForm.register('tipo')}>
+              <Label htmlFor="filter-tipo">Tipo de Transação</Label>
+              <Select id="filter-tipo" {...filterForm.register('tipo')}>
                 <option value="">Todos os tipos</option>
                 <option value="deposito">Depósito</option>
                 <option value="saque">Saque</option>
                 <option value="transferencia">Transferência</option>
+                <option value="pix">PIX</option>
               </Select>
             </FormGroup>
 
             <FormGroup>
-              <Label>Data Início</Label>
+              <Label htmlFor="filter-data-inicio">Data Início</Label>
               <Input
+                id="filter-data-inicio"
                 type="date"
                 {...filterForm.register('data_inicio')}
               />
             </FormGroup>
 
             <FormGroup>
-              <Label>Data Fim</Label>
+              <Label htmlFor="filter-data-fim">Data Fim</Label>
               <Input
+                id="filter-data-fim"
                 type="date"
                 {...filterForm.register('data_fim')}
               />
             </FormGroup>
 
             <FormGroup>
-              <Label>Valor Mínimo</Label>
+              <Label htmlFor="filter-valor-min">Valor Mínimo</Label>
               <Input
+                id="filter-valor-min"
                 type="number"
                 step="0.01"
                 placeholder="0,00"
@@ -521,8 +568,9 @@ export const Statement: React.FC = () => {
             </FormGroup>
 
             <FormGroup>
-              <Label>Valor Máximo</Label>
+              <Label htmlFor="filter-valor-max">Valor Máximo</Label>
               <Input
+                id="filter-valor-max"
                 type="number"
                 step="0.01"
                 placeholder="0,00"
@@ -576,21 +624,16 @@ export const Statement: React.FC = () => {
                     {getTransactionTypeLabel(transaction.tipo)}
                   </TransactionType>
                   <TransactionInfo>
-                    <span>{formatDate(transaction.data_transacao)}</span>
-                    {transaction.conta_origem && (
-                      <span>De: {transaction.conta_origem}</span>
-                    )}
-                    {transaction.conta_destino && (
-                      <span>Para: {transaction.conta_destino}</span>
-                    )}
-                    {transaction.descricao && (
-                      <span>{transaction.descricao}</span>
-                    )}
-                  </TransactionInfo>
+                      <span>{formatDate(transaction.created_at)}</span>
+                      {transaction.descricao && (
+                        <span>{transaction.descricao}</span>
+                      )}
+                      <span>Saldo: {formatCurrency(transaction.saldo_anterior)} → {formatCurrency(transaction.saldo_posterior)}</span>
+                    </TransactionInfo>
                 </TransactionDetails>
                 
                 <TransactionAmount type={transaction.tipo}>
-                  {transaction.tipo === 'saque' ? '-' : '+'}{formatCurrency(transaction.valor)}
+                  {getTransactionSign(transaction)}{formatCurrency(transaction.valor)}
                 </TransactionAmount>
               </TransactionItem>
             ))

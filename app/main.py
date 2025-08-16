@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from .database import create_tables
 from .routes import auth, conta, transacao, pix
+from .middleware import SecurityHeadersMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,12 +32,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Configurar middlewares de segurança
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, especificar domínios específicos
+    allow_origins=["http://localhost:3000"],  # Especificar origem do frontend
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

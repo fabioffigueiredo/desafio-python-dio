@@ -64,7 +64,9 @@ const TabList = styled.div`
   gap: 2rem;
 `;
 
-const Tab = styled.button<{ active: boolean }>`
+const Tab = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active: boolean }>`
   padding: 1rem 0;
   font-weight: 500;
   color: ${props => props.active ? '#3b82f6' : '#6b7280'};
@@ -107,7 +109,9 @@ const Form = styled.form`
   gap: 1rem;
 `;
 
-const Input = styled.input<{ hasError?: boolean }>`
+const Input = styled.input.withConfig({
+  shouldForwardProp: (prop) => prop !== 'hasError',
+})<{ hasError?: boolean }>`
   padding: 0.75rem;
   border: 1px solid ${props => props.hasError ? '#ef4444' : '#d1d5db'};
   border-radius: 8px;
@@ -121,7 +125,9 @@ const Input = styled.input<{ hasError?: boolean }>`
   }
 `;
 
-const Select = styled.select<{ hasError?: boolean }>`
+const Select = styled.select.withConfig({
+  shouldForwardProp: (prop) => prop !== 'hasError',
+})<{ hasError?: boolean }>`
   padding: 0.75rem;
   border: 1px solid ${props => props.hasError ? '#ef4444' : '#d1d5db'};
   border-radius: 8px;
@@ -136,7 +142,9 @@ const Select = styled.select<{ hasError?: boolean }>`
   }
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' | 'danger' }>`
+const Button = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['variant'].includes(prop),
+})<{ variant?: 'primary' | 'secondary' | 'danger' }>`
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 500;
@@ -303,7 +311,7 @@ const transferSchema = yup.object({
 
 const Pix: React.FC = () => {
   const { user } = useAuth();
-  const { selectedAccount } = useSelectedAccount();
+  const { selectedAccount, loadAccounts } = useSelectedAccount();
   const [activeTab, setActiveTab] = useState<'chaves' | 'transferir'>('chaves');
   const [chaves, setChaves] = useState<ChavePix[]>([]);
   const [loading, setLoading] = useState(false);
@@ -398,20 +406,22 @@ const Pix: React.FC = () => {
   };
 
   const detectChaveType = (chave: string): string => {
-    const cleanChave = chave.replace(/[^\w@.-]/g, '');
+    const trimmedChave = chave.trim();
     
     // Email: contém @ e formato válido
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanChave)) {
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedChave)) {
       return 'email';
     }
     
-    // CPF: exatamente 11 dígitos numéricos
-    if (/^\d{11}$/.test(cleanChave)) {
+    // CPF: 11 dígitos numéricos (com ou sem formatação)
+    const onlyNumbers = trimmedChave.replace(/\D/g, '');
+    if (onlyNumbers.length === 11 && /^\d{11}$/.test(onlyNumbers)) {
       return 'cpf';
     }
     
-    // Telefone: 10 dígitos (fixo) ou 11 dígitos começando com 9 (celular)
-    if (/^\d{10}$/.test(cleanChave) || (/^\d{11}$/.test(cleanChave) && cleanChave.charAt(2) === '9')) {
+    // Telefone: 10 ou 11 dígitos (com ou sem formatação)
+    if ((onlyNumbers.length === 10 && /^\d{10}$/.test(onlyNumbers)) || 
+        (onlyNumbers.length === 11 && /^\d{11}$/.test(onlyNumbers) && onlyNumbers.charAt(2) === '9')) {
       return 'telefone';
     }
     
@@ -421,11 +431,11 @@ const Pix: React.FC = () => {
 
   const cleanChavePix = (chave: string, tipo?: string) => {
     // Para CPF e telefone, remove todos os caracteres não numéricos
-    if (tipo === 'CPF' || tipo === 'Telefone') {
+    if (tipo === 'cpf' || tipo === 'telefone') {
       return chave.replace(/\D/g, '');
     }
     // Para email, mantém como está
-    if (tipo === 'E-mail') {
+    if (tipo === 'email') {
       return chave.toLowerCase();
     }
     // Para outros tipos, remove formatação geral
@@ -486,8 +496,8 @@ const Pix: React.FC = () => {
       setValidationData(null);
       resetTransfer();
       
-      // Recarregar dados da conta
-      window.location.reload();
+      // Recarregar dados da conta para atualizar o saldo
+      await loadAccounts();
     } catch (error: any) {
       console.error(error.response?.data?.detail || 'Erro ao realizar transferência');
     } finally {
@@ -615,7 +625,9 @@ const Pix: React.FC = () => {
             
             <Form onSubmit={handleSubmitChave(handleCreateChave)}>
               <div>
+                <label htmlFor="pix-tipo">Tipo de Chave</label>
                 <Select 
+                  id="pix-tipo"
                   {...registerChave('tipo')} 
                   hasError={!!errorsChave.tipo}
                 >
@@ -632,7 +644,9 @@ const Pix: React.FC = () => {
 
               {tipoChave && tipoChave !== 'aleatoria' && (
                 <div>
+                  <label htmlFor="pix-chave">Chave PIX</label>
                   <Input
+                    id="pix-chave"
                     {...registerChave('chave')}
                     type={tipoChave === 'email' ? 'email' : 'text'}
                     placeholder={`Digite seu ${getTipoLabel(tipoChave).toLowerCase()}`}
@@ -672,7 +686,9 @@ const Pix: React.FC = () => {
             
             <Form onSubmit={handleSubmitTransfer(handleValidateTransfer)}>
               <div>
+                <label htmlFor="transfer-chave-destino">Chave PIX do Destinatário</label>
                 <Input
+                  id="transfer-chave-destino"
                   {...registerTransfer('chave_destino')}
                   placeholder="Digite a chave PIX do destinatário"
                   hasError={!!errorsTransfer.chave_destino}
@@ -694,7 +710,9 @@ const Pix: React.FC = () => {
               </div>
 
               <div>
+                <label htmlFor="transfer-valor">Valor</label>
                 <Input
+                  id="transfer-valor"
                   {...registerTransfer('valor')}
                   type="number"
                   step="0.01"
@@ -708,7 +726,9 @@ const Pix: React.FC = () => {
               </div>
 
               <div>
+                <label htmlFor="transfer-descricao">Descrição (opcional)</label>
                 <Input
+                  id="transfer-descricao"
                   {...registerTransfer('descricao')}
                   placeholder="Descrição (opcional)"
                 />

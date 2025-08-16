@@ -53,6 +53,7 @@ export const SelectedAccountProvider: React.FC<SelectedAccountProviderProps> = (
       }
     } catch (error) {
       console.error('Erro ao carregar contas:', error);
+      setAccounts([]);
     } finally {
       setLoading(false);
     }

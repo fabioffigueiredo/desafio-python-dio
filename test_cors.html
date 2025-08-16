@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste CORS</title>
+</head>
+<body>
+    <h1>Teste de CORS e API</h1>
+    <button onclick="testLogin()">Testar Login</button>
+    <button onclick="testContas()">Testar Contas</button>
+    <div id="result"></div>
+
+    <script>
+        let token = null;
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:8000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cpf: '11144477735',
+                        senha: '123456'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.access_token) {
+                    token = data.access_token;
+                    document.getElementById('result').innerHTML = '<p>Login OK! Token: ' + token.substring(0, 20) + '...</p>';
+                } else {
+                    document.getElementById('result').innerHTML = '<p>Erro no login: ' + JSON.stringify(data) + '</p>';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('result').innerHTML = '<p>Erro: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testContas() {
+            if (!token) {
+                document.getElementById('result').innerHTML = '<p>Faça login primeiro!</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/contas/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('Contas response:', data);
+                document.getElementById('result').innerHTML = '<p>Contas: ' + JSON.stringify(data, null, 2) + '</p>';
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('result').innerHTML = '<p>Erro: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

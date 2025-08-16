@@ -126,7 +126,9 @@ const ErrorMessage = styled.span`
   font-size: 0.875rem;
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const Button = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['variant'].includes(prop),
+})<{ variant?: 'primary' | 'secondary' }>`
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -255,7 +257,7 @@ const transferSchema = yup.object({
 
 export const Operations: React.FC = () => {
   const { user } = useAuth();
-  const { selectedAccount, accounts } = useSelectedAccount();
+  const { selectedAccount, accounts, loadAccounts } = useSelectedAccount();
   const { addNotification } = useNotification();
   const [loading, setLoading] = useState(false);
   const [showTransferConfirmation, setShowTransferConfirmation] = useState(false);
@@ -305,6 +307,8 @@ export const Operations: React.FC = () => {
         message: `Depósito de ${formatCurrency(data.valor)} realizado com sucesso!`
       });
       depositForm.reset();
+      // Recarrega as contas para atualizar o saldo
+      await loadAccounts();
     } catch (error: any) {
       let errorMessage = 'Erro ao realizar depósito';
       
@@ -340,6 +344,8 @@ export const Operations: React.FC = () => {
         message: `Saque de ${formatCurrency(data.valor)} realizado com sucesso!`
       });
       withdrawForm.reset();
+      // Recarrega as contas para atualizar o saldo
+      await loadAccounts();
     } catch (error: any) {
       let errorMessage = 'Erro ao realizar saque';
       
@@ -430,6 +436,9 @@ export const Operations: React.FC = () => {
       setTransferValidationData(null);
       setPendingTransferData(null);
       
+      // Recarrega as contas para atualizar o saldo
+      await loadAccounts();
+      
     } catch (error: any) {
       let errorMessage = 'Erro ao realizar transferência';
       
@@ -495,8 +504,9 @@ export const Operations: React.FC = () => {
             <input type="hidden" {...depositForm.register('conta_id')} />
 
             <FormGroup>
-              <Label>Valor</Label>
+              <Label htmlFor="deposit-valor">Valor</Label>
               <Input
+                id="deposit-valor"
                 type="number"
                 step="0.01"
                 placeholder="0,00"
@@ -531,8 +541,9 @@ export const Operations: React.FC = () => {
             <input type="hidden" {...withdrawForm.register('conta_id')} />
 
             <FormGroup>
-              <Label>Valor</Label>
+              <Label htmlFor="withdraw-valor">Valor</Label>
               <Input
+                id="withdraw-valor"
                 type="number"
                 step="0.01"
                 placeholder="0,00"
@@ -567,8 +578,9 @@ export const Operations: React.FC = () => {
             <input type="hidden" {...transferForm.register('conta_origem_id')} />
 
             <FormGroup>
-              <Label>Conta de Destino</Label>
+              <Label htmlFor="transfer-conta-destino">Conta de Destino</Label>
               <Input
+                id="transfer-conta-destino"
                 type="text"
                 placeholder="Número da conta de destino"
                 {...transferForm.register('conta_destino')}
@@ -580,8 +592,9 @@ export const Operations: React.FC = () => {
             </FormGroup>
 
             <FormGroup>
-              <Label>Valor</Label>
+              <Label htmlFor="transfer-valor">Valor</Label>
               <Input
+                id="transfer-valor"
                 type="number"
                 step="0.01"
                 placeholder="0,00"

@@ -227,11 +227,13 @@ const TransactionIcon = styled.div<{ type: string }>`
   background: ${({ type }) => {
     switch (type) {
       case 'deposito':
-      case 'transferencia_credito':
         return theme.colors.success[100];
       case 'saque':
-      case 'transferencia_debito':
         return theme.colors.error[100];
+      case 'transferencia':
+        return theme.colors.success[100];
+      case 'pix':
+         return theme.colors.primary[100];
       default:
         return theme.colors.gray[100];
     }
@@ -239,11 +241,13 @@ const TransactionIcon = styled.div<{ type: string }>`
   color: ${({ type }) => {
     switch (type) {
       case 'deposito':
-      case 'transferencia_credito':
         return theme.colors.success[600];
       case 'saque':
-      case 'transferencia_debito':
         return theme.colors.error[600];
+      case 'transferencia':
+        return theme.colors.success[600];
+      case 'pix':
+         return theme.colors.primary[600];
       default:
         return theme.colors.gray[600];
     }
@@ -270,11 +274,13 @@ const TransactionAmount = styled.div<{ type: string }>`
   color: ${({ type }) => {
     switch (type) {
       case 'deposito':
-      case 'transferencia_credito':
         return theme.colors.success[600];
       case 'saque':
-      case 'transferencia_debito':
         return theme.colors.error[600];
+      case 'transferencia':
+        return theme.colors.success[600];
+      case 'pix':
+         return theme.colors.primary[600];
       default:
         return theme.colors.gray[900];
     }
@@ -290,11 +296,13 @@ const EmptyState = styled.div`
 const getTransactionIcon = (type: string) => {
   switch (type) {
     case 'deposito':
-    case 'transferencia_credito':
       return <ArrowDownLeft size={20} />;
     case 'saque':
-    case 'transferencia_debito':
       return <ArrowUpRight size={20} />;
+    case 'transferencia':
+      return <ArrowUpRight size={20} />;
+    case 'pix':
+      return <ArrowDownLeft size={20} />;
     default:
       return <CreditCard size={20} />;
   }
@@ -306,10 +314,10 @@ const getTransactionLabel = (type: string) => {
       return 'Depósito';
     case 'saque':
       return 'Saque';
-    case 'transferencia_credito':
-      return 'Transferência Recebida';
-    case 'transferencia_debito':
-      return 'Transferência Enviada';
+    case 'transferencia':
+      return 'Transferência';
+    case 'pix':
+      return 'PIX';
     default:
       return 'Transação';
   }
@@ -337,7 +345,7 @@ const Dashboard: React.FC = () => {
       
       // Ordenar por data (mais recentes primeiro)
       const transacoesOrdenadas = todasTransacoes.sort(
-        (a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime()
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       
       setRecentTransactions(transacoesOrdenadas.slice(0, 5));
@@ -346,7 +354,7 @@ const Dashboard: React.FC = () => {
       const agora = new Date();
       const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
       const transacoesMes = todasTransacoes.filter(
-        transacao => new Date(transacao.data_transacao) >= inicioMes
+        transacao => new Date(transacao.created_at) >= inicioMes
       );
       setMonthlyTransactions(transacoesMes.length);
     } catch (err) {
@@ -476,12 +484,12 @@ const Dashboard: React.FC = () => {
                     {getTransactionLabel(transacao.tipo)}
                   </TransactionType>
                   <TransactionDate>
-                    {formatDateTime(transacao.data_transacao)}
+                    {formatDateTime(transacao.created_at)}
                   </TransactionDate>
                 </TransactionDetails>
                 
                 <TransactionAmount type={transacao.tipo}>
-                  {transacao.tipo === 'deposito' || transacao.tipo === 'transferencia_credito' ? '+' : '-'}
+                  {transacao.tipo === 'deposito' ? '+' : '-'}
                   {formatCurrency(transacao.valor)}
                 </TransactionAmount>
               </TransactionItem>

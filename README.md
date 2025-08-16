@@ -1,27 +1,33 @@
-# Sistema Bancário DIO - v1.0
+# Sistema Bancário DIO - v5.0
 
 ## 📋 Descrição
 
-Sistema bancário completo desenvolvido para o desafio da DIO (Digital Innovation One), implementando operações bancárias básicas com arquitetura moderna usando FastAPI no backend e React no frontend.
+Sistema bancário completo desenvolvido para o desafio da DIO (Digital Innovation One), implementando operações bancárias modernas com arquitetura robusta usando FastAPI no backend e React no frontend.
 
 ## 🚀 Funcionalidades
 
-### ✅ Implementadas (v1.0)
+### ✅ Implementadas (v5.0)
 - **Autenticação de usuários** (registro, login, logout)
 - **Gerenciamento de contas bancárias** (criação, visualização)
 - **Operações bancárias**:
   - Depósito
   - Saque
   - Transferência entre contas
+  - **Transferências PIX** (nova funcionalidade)
+- **Sistema PIX completo**:
+  - Criação e gerenciamento de chaves PIX
+  - Transferências instantâneas via PIX
+  - Histórico de transações PIX
 - **Validações de negócio** (saldo suficiente, limites de valor)
 - **Interface web responsiva** com React
 - **Containerização** com Docker
+- **Extrato detalhado** com todas as transações
 
 ### 🔄 Próximas versões
-- Funcionalidades PIX
 - Sistema de cartões
-- Histórico detalhado de transações
-- Testes automatizados
+- Notificações em tempo real
+- Relatórios financeiros
+- Testes automatizados expandidos
 
 ## 🛠️ Tecnologias
 
@@ -93,6 +99,8 @@ O sistema utiliza MySQL com as seguintes tabelas principais:
 - `usuarios` - Dados dos usuários
 - `contas` - Contas bancárias
 - `transacoes` - Histórico de transações
+- `chaves_pix` - Chaves PIX dos usuários
+- `transacoes_pix` - Transações PIX específicas
 
 ## 🔐 Autenticação
 
@@ -118,6 +126,13 @@ O sistema utiliza JWT (JSON Web Tokens) para autenticação:
 - Valor máximo: R$ 10.000,00
 - Verificação de saldo suficiente
 - Confirmação obrigatória
+
+### PIX
+- Valor mínimo: R$ 0,01
+- Valor máximo: R$ 50.000,00
+- Transferências instantâneas
+- Suporte a chaves: CPF, e-mail, telefone, chave aleatória
+- Verificação de saldo suficiente
 
 ## 🧪 Testes
 

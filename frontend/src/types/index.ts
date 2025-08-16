@@ -72,11 +72,13 @@ export interface SaldoResponse {
 // Tipos para transações
 export interface Transacao {
   id: number;
-  tipo: 'saque' | 'deposito' | 'transferencia_debito' | 'transferencia_credito';
+  tipo: 'saque' | 'deposito' | 'transferencia' | 'pix';
   valor: number;
-  data_transacao: string;
-  conta_numero: string;
-  conta_destino_numero?: string;
+  descricao?: string;
+  saldo_anterior: number;
+  saldo_posterior: number;
+  conta_id: number;
+  created_at: string;
 }
 
 export interface SaqueRequest {
@@ -95,22 +97,18 @@ export interface TransferenciaRequest {
 export interface ExtratoRequest {
   data_inicio?: string;
   data_fim?: string;
-  tipo_transacao?: 'saque' | 'deposito' | 'transferencia_debito' | 'transferencia_credito';
+  tipo_transacao?: 'saque' | 'deposito' | 'transferencia' | 'pix';
 }
 
 export interface ExtratoResponse {
   conta_numero: string;
-  periodo: {
-    data_inicio: string;
-    data_fim: string;
-  };
+  saldo_atual: number;
+  periodo_inicio: string;
+  periodo_fim: string;
   transacoes: Transacao[];
-  resumo: {
-    total_saques: number;
-    total_depositos: number;
-    saldo_inicial: number;
-    saldo_final: number;
-  };
+  total_saques: number;
+  total_depositos: number;
+  quantidade_transacoes: number;
 }
 
 // Tipos para API
@@ -205,7 +203,7 @@ export interface PixTransferenciaResponse {
   valor: number;
   descricao?: string;
   status: string;
-  data_transacao: string;
+  created_at: string;
 }
 
 export interface ChavePixDeleteRequest {

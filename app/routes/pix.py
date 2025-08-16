@@ -7,7 +7,8 @@ import uuid
 import re
 
 from ..database import get_db
-from ..models import Cliente, Conta, ChavePix, TransacaoPix, TipoChavePix
+from ..models import Cliente, Conta, ChavePix, TransacaoPix, Transacao
+from ..models.pix import TipoChavePix
 from ..schemas import (
     ChavePixCreate,
     ChavePixResponse,
@@ -303,7 +304,14 @@ async def realizar_transferencia_pix(
         )
     
     try:
-        # Realizar transferência
+        # Buscar informações dos clientes para incluir nomes nas descrições
+        cliente_origem = db.query(Cliente).filter(Cliente.id == conta_origem.cliente_id).first()
+        cliente_destino = db.query(Cliente).filter(Cliente.id == conta_destino.cliente_id).first()
+        
+        # Processar transferência PIX
+        saldo_anterior_origem = conta_origem.saldo
+        saldo_anterior_destino = conta_destino.saldo
+        
         conta_origem.saldo -= valor
         conta_destino.saldo += valor
         
@@ -318,7 +326,37 @@ async def realizar_transferencia_pix(
             conta_destino_id=conta_destino.id
         )
         
+        # Criar transação de débito PIX (origem) para aparecer no extrato
+        descricao_origem = f"PIX para {cliente_destino.nome} - Chave: {transferencia_data.chave_destino[:20]}..."
+        if transferencia_data.descricao:
+            descricao_origem += f": {transferencia_data.descricao}"
+            
+        transacao_origem = Transacao(
+            tipo="pix",
+            valor=valor,
+            descricao=descricao_origem,
+            saldo_anterior=saldo_anterior_origem,
+            saldo_posterior=conta_origem.saldo,
+            conta_id=conta_origem.id
+        )
+        
+        # Criar transação de crédito PIX (destino) para aparecer no extrato
+        descricao_destino = f"PIX recebido de {cliente_origem.nome} - Chave: {chave_origem.chave[:20]}..."
+        if transferencia_data.descricao:
+            descricao_destino += f": {transferencia_data.descricao}"
+            
+        transacao_destino = Transacao(
+            tipo="pix",
+            valor=valor,
+            descricao=descricao_destino,
+            saldo_anterior=saldo_anterior_destino,
+            saldo_posterior=conta_destino.saldo,
+            conta_id=conta_destino.id
+        )
+        
         db.add(transacao_pix)
+        db.add(transacao_origem)
+        db.add(transacao_destino)
         db.commit()
         db.refresh(transacao_pix)
         

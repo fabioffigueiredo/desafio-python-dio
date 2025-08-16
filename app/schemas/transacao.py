@@ -11,8 +11,8 @@ class TransacaoBase(BaseModel):
     
     @validator('tipo')
     def validate_tipo(cls, v):
-        if v not in ['saque', 'deposito', 'transferencia']:
-            raise ValueError('Tipo deve ser "saque", "deposito" ou "transferencia"')
+        if v not in ['saque', 'deposito', 'transferencia', 'pix']:
+            raise ValueError('Tipo deve ser "saque", "deposito", "transferencia" ou "pix"')
         return v
 
 class SaqueRequest(BaseModel):
@@ -82,8 +82,8 @@ class ExtratoRequest(BaseModel):
     
     @validator('tipo_transacao')
     def validate_tipo_filtro(cls, v):
-        if v and v not in ['saque', 'deposito', 'transferencia']:
-            raise ValueError('Tipo deve ser "saque", "deposito" ou "transferencia"')
+        if v and v not in ['saque', 'deposito', 'transferencia', 'pix']:
+            raise ValueError('Tipo deve ser "saque", "deposito", "transferencia" ou "pix"')
         return v
 
 class ExtratoResponse(BaseModel):
