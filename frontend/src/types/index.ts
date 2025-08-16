@@ -158,3 +158,56 @@ export interface DashboardData {
     transacoes_mes: number;
   };
 }
+
+// Tipos para PIX
+export type TipoChavePix = 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
+
+export interface ChavePix {
+  id: number;
+  chave: string;
+  tipo: TipoChavePix;
+  ativa: boolean;
+  data_criacao: string;
+  conta_numero: string;
+}
+
+export interface ChavePixCreate {
+  chave: string;
+  tipo: TipoChavePix;
+  conta_numero: string;
+}
+
+export interface ChavePixListResponse {
+  chaves: ChavePix[];
+  total: number;
+}
+
+export interface PixTransferenciaRequest {
+  chave_destino: string;
+  valor: number;
+  descricao?: string;
+}
+
+export interface PixValidationResponse {
+  chave_destino: string;
+  beneficiario_nome: string;
+  beneficiario_cpf: string;
+  valor: number;
+  taxa: number;
+  valor_total: number;
+  saldo_disponivel: number;
+}
+
+export interface PixTransferenciaResponse {
+  id: number;
+  chave_origem: string;
+  chave_destino: string;
+  valor: number;
+  descricao?: string;
+  status: string;
+  data_transacao: string;
+}
+
+export interface ChavePixDeleteRequest {
+  chave: string;
+}

@@ -241,6 +241,7 @@ const Overlay = styled.div<{ $isVisible: boolean }>`
 const navigationItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
   { path: '/operacoes', label: 'Operações', icon: ArrowUpDown },
+  { path: '/pix', label: 'PIX', icon: ArrowUpDown },
   { path: '/extrato', label: 'Extrato', icon: FileText },
   { path: '/contas', label: 'Contas', icon: CreditCard },
   { path: '/configuracoes', label: 'Configurações', icon: Settings },

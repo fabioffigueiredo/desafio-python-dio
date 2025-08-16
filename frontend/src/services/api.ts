@@ -13,7 +13,14 @@ import {
   ExtratoRequest,
   ExtratoResponse,
   Transacao,
-  ApiError
+  ApiError,
+  ChavePixCreate,
+  ChavePix,
+  ChavePixListResponse,
+  PixTransferenciaRequest,
+  PixValidationResponse,
+  PixTransferenciaResponse,
+  ChavePixDeleteRequest
 } from '../types';
 
 class ApiService {
@@ -136,6 +143,32 @@ class ApiService {
     const response: AxiosResponse<ExtratoResponse> = await this.api.get(`/transacoes/${numero}/extrato`, {
       params,
     });
+    return response.data;
+  }
+
+  // Métodos PIX
+  async criarChavePix(data: ChavePixCreate): Promise<ChavePix> {
+    const response: AxiosResponse<ChavePix> = await this.api.post('/pix/chaves', data);
+    return response.data;
+  }
+
+  async listarChavesPix(contaNumero: string): Promise<ChavePixListResponse> {
+    const response: AxiosResponse<ChavePixListResponse> = await this.api.get(`/pix/chaves/${contaNumero}`);
+    return response.data;
+  }
+
+  async removerChavePix(data: ChavePixDeleteRequest): Promise<{ message: string }> {
+    const response: AxiosResponse<{ message: string }> = await this.api.delete('/pix/chaves', { data });
+    return response.data;
+  }
+
+  async validarTransferenciaPix(contaNumero: string, data: PixTransferenciaRequest): Promise<PixValidationResponse> {
+    const response: AxiosResponse<PixValidationResponse> = await this.api.post(`/pix/transferencia/${contaNumero}/validar`, data);
+    return response.data;
+  }
+
+  async realizarTransferenciaPix(contaNumero: string, data: PixTransferenciaRequest): Promise<PixTransferenciaResponse> {
+    const response: AxiosResponse<PixTransferenciaResponse> = await this.api.post(`/pix/transferencia/${contaNumero}`, data);
     return response.data;
   }
 

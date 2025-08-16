@@ -508,6 +508,10 @@ export const Operations: React.FC = () => {
               )}
             </FormGroup>
 
+            <div style={{ minHeight: '1.375rem', display: 'flex', alignItems: 'center' }}>
+              {/* Espaço para informações adicionais */}
+            </div>
+
             <Button type="submit" disabled={loading}>
               {loading ? 'Processando...' : 'Depositar'}
             </Button>
@@ -540,11 +544,9 @@ export const Operations: React.FC = () => {
               )}
             </FormGroup>
 
-            {withdrawForm.watch('conta_id') && (
-              <div style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-                Saldo disponível: {formatCurrency(getSelectedAccount(withdrawForm.watch('conta_id'))?.saldo || 0)}
-              </div>
-            )}
+            <div style={{ minHeight: '1.375rem', display: 'flex', alignItems: 'center' }}>
+              {/* Espaço para informações adicionais */}
+            </div>
 
             <Button type="submit" disabled={loading}>
               {loading ? 'Processando...' : 'Sacar'}
@@ -591,11 +593,7 @@ export const Operations: React.FC = () => {
               )}
             </FormGroup>
 
-            {selectedAccount && (
-              <div style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-                Saldo disponível: {formatCurrency(selectedAccount.saldo)}
-              </div>
-            )}
+
 
             <Button type="submit" disabled={loading}>
               {loading ? 'Processando...' : 'Transferir'}

@@ -18,6 +18,7 @@ import { Operations } from './pages/Operations';
 import { Statement } from './pages/Statement';
 import Accounts from './pages/Accounts';
 import Settings from './pages/Settings';
+import Pix from './pages/Pix';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -162,6 +163,14 @@ function App() {
                   element={
                     <ProtectedRouteWithAccount>
                       <Settings />
+                    </ProtectedRouteWithAccount>
+                  }
+                />
+                <Route
+                  path="/pix"
+                  element={
+                    <ProtectedRouteWithAccount>
+                      <Pix />
                     </ProtectedRouteWithAccount>
                   }
                 />

@@ -2,6 +2,7 @@ from .base import Base, BaseModel
 from .cliente import Cliente
 from .conta import Conta, ContaCorrente
 from .transacao import Transacao, Saque, Deposito
+from .pix import ChavePix, TransacaoPix, TipoChavePix
 
 __all__ = [
     "Base",
@@ -12,4 +13,7 @@ __all__ = [
     "Transacao",
     "Saque",
     "Deposito",
+    "ChavePix",
+    "TransacaoPix",
+    "TipoChavePix",
 ]

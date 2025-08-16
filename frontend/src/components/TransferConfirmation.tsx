@@ -170,14 +170,7 @@ const TransferConfirmation: React.FC<TransferConfirmationProps> = ({
                 <span style={{ fontWeight: '600', color: '#374151' }}>Total:</span>
                 <span style={{ fontWeight: 'bold', fontSize: '1.125rem', color: '#111827' }}>{formatCurrency(transferData.valor_total)}</span>
               </div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '0.875rem'
-              }}>
-                <span style={{ color: '#6b7280' }}>Saldo disponível:</span>
-                <span style={{ color: '#6b7280' }}>{formatCurrency(transferData.saldo_disponivel)}</span>
-              </div>
+
             </div>
           </div>
 

@@ -25,6 +25,15 @@ from .transacao import (
     ExtratoRequest,
     ExtratoResponse
 )
+from .pix import (
+    ChavePixCreate,
+    ChavePixResponse,
+    ChavePixListResponse,
+    PixTransferenciaRequest,
+    PixValidationResponse,
+    PixTransferenciaResponse,
+    ChavePixDeleteRequest
+)
 
 __all__ = [
     # Auth
@@ -55,4 +64,12 @@ __all__ = [
     "TransacaoResponse",
     "ExtratoRequest",
     "ExtratoResponse",
+    # PIX
+    "ChavePixCreate",
+    "ChavePixResponse",
+    "ChavePixListResponse",
+    "PixTransferenciaRequest",
+    "PixValidationResponse",
+    "PixTransferenciaResponse",
+    "ChavePixDeleteRequest",
 ]
