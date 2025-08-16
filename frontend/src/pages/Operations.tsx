@@ -200,18 +200,57 @@ interface TransferForm {
 
 const depositSchema = yup.object({
   conta_id: yup.string().required('Selecione uma conta'),
-  valor: yup.number().positive('Valor deve ser positivo').required('Valor é obrigatório')
+  valor: yup.number()
+    .transform((value, originalValue) => {
+      // Se o valor original for uma string vazia, retorna undefined
+      if (originalValue === '' || originalValue === null || originalValue === undefined) {
+        return undefined;
+      }
+      // Converte string para número
+      const parsed = parseFloat(originalValue);
+      return isNaN(parsed) ? undefined : parsed;
+    })
+    .positive('Valor deve ser positivo')
+    .required('Valor é obrigatório')
+    .min(0.01, 'Valor mínimo é R$ 0,01')
+    .max(50000, 'Valor máximo é R$ 50.000,00')
 });
 
 const withdrawSchema = yup.object({
   conta_id: yup.string().required('Selecione uma conta'),
-  valor: yup.number().positive('Valor deve ser positivo').required('Valor é obrigatório')
+  valor: yup.number()
+    .transform((value, originalValue) => {
+      // Se o valor original for uma string vazia, retorna undefined
+      if (originalValue === '' || originalValue === null || originalValue === undefined) {
+        return undefined;
+      }
+      // Converte string para número
+      const parsed = parseFloat(originalValue);
+      return isNaN(parsed) ? undefined : parsed;
+    })
+    .positive('Valor deve ser positivo')
+    .required('Valor é obrigatório')
+    .min(0.01, 'Valor mínimo é R$ 0,01')
+    .max(5000, 'Valor máximo é R$ 5.000,00')
 });
 
 const transferSchema = yup.object({
   conta_origem_id: yup.string().required('Selecione uma conta de origem'),
   conta_destino: yup.string().required('Número da conta de destino é obrigatório'),
-  valor: yup.number().positive('Valor deve ser positivo').required('Valor é obrigatório')
+  valor: yup.number()
+    .transform((value, originalValue) => {
+      // Se o valor original for uma string vazia, retorna undefined
+      if (originalValue === '' || originalValue === null || originalValue === undefined) {
+        return undefined;
+      }
+      // Converte string para número
+      const parsed = parseFloat(originalValue);
+      return isNaN(parsed) ? undefined : parsed;
+    })
+    .positive('Valor deve ser positivo')
+    .required('Valor é obrigatório')
+    .min(0.01, 'Valor mínimo é R$ 0,01')
+    .max(10000, 'Valor máximo é R$ 10.000,00')
 });
 
 export const Operations: React.FC = () => {
@@ -461,7 +500,7 @@ export const Operations: React.FC = () => {
                 type="number"
                 step="0.01"
                 placeholder="0,00"
-                {...depositForm.register('valor', { valueAsNumber: true })}
+                {...depositForm.register('valor')}
                 hasError={!!depositForm.formState.errors.valor}
               />
               {depositForm.formState.errors.valor && (
@@ -493,7 +532,7 @@ export const Operations: React.FC = () => {
                 type="number"
                 step="0.01"
                 placeholder="0,00"
-                {...withdrawForm.register('valor', { valueAsNumber: true })}
+                {...withdrawForm.register('valor')}
                 hasError={!!withdrawForm.formState.errors.valor}
               />
               {withdrawForm.formState.errors.valor && (
@@ -544,7 +583,7 @@ export const Operations: React.FC = () => {
                 type="number"
                 step="0.01"
                 placeholder="0,00"
-                {...transferForm.register('valor', { valueAsNumber: true })}
+                {...transferForm.register('valor')}
                 hasError={!!transferForm.formState.errors.valor}
               />
               {transferForm.formState.errors.valor && (
